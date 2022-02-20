@@ -8,11 +8,12 @@ import org.opentest4j.AssertionFailedError;
 
 import static dev.yila.dormamu.FakeTables.TABLE_ONE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 
 @DatabaseTables(FakeTables.class)
 @ExtendWith(DatabaseExtension.class)
 public class TableChangesTest {
+
+    private final static Row ROW_ONE = new FakeRow("1", "name", "Me");
 
     @Test
     void noChanges(Db db) {
@@ -23,7 +24,7 @@ public class TableChangesTest {
     @Test
     void newRowInTable(Db db) {
         db.when("Add a new row in table " + TABLE_ONE, () ->
-            getFakeTables(db).insertRow(TABLE_ONE, mock(Row.class))
+            getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE)
         ).expect(changes -> changes.areExactly(1)
                 .newRowIn(TABLE_ONE)
                 .allValidated());
@@ -33,17 +34,16 @@ public class TableChangesTest {
     void changeShouldBeValidated(Db db) {
         assertThrows(AssertionFailedError.class, () -> {
             db.when("Add a new row", () ->
-                getFakeTables(db).insertRow(TABLE_ONE, mock(Row.class))
+                getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE)
             ).expect(Changes::allValidated);
         });
     }
 
     @Test
     void deleteRowInTable(Db db) {
-        Row row = mock(Row.class);
-        getFakeTables(db).insertRow(TABLE_ONE, row);
+        getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE);
         db.when("Delete row in table " + TABLE_ONE, () ->
-                getFakeTables(db).deleteRow(TABLE_ONE, row)
+                getFakeTables(db).deleteRow(TABLE_ONE, ROW_ONE)
         ).expect(changes -> changes.areExactly(1)
                 .deletedRowIn(TABLE_ONE)
                 .allValidated());

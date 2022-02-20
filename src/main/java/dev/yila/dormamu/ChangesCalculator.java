@@ -29,10 +29,9 @@ public interface ChangesCalculator {
     }
 
     private Collection<? extends Change> rowsDeleted(String table, List<Row> rowsBefore, List<Row> rowsAfter) {
-        //TODO
         Set<Change> deleted = new HashSet<>();
         rowsBefore.forEach(row -> {
-            if (!rowsAfter.contains(row)) {
+            if (rowsMissingId(rowsAfter, row.getId())) {
                 deleted.add(Change.delete(table, row));
             }
         });
@@ -40,13 +39,16 @@ public interface ChangesCalculator {
     }
 
     private Collection<? extends Change> rowsInserted(String table, List<Row> rowsBefore, List<Row> rowsAfter) {
-        //TODO
         Set<Change> inserted = new HashSet<>();
         rowsAfter.forEach(row -> {
-            if (!rowsBefore.contains(row)) {
+            if (rowsMissingId(rowsBefore, row.getId())) {
                 inserted.add(Change.insert(table, row));
             }
         });
         return inserted;
+    }
+
+    private boolean rowsMissingId(List<Row> rows, String id) {
+        return rows.stream().noneMatch(row -> row.getId().equals(id));
     }
 }
