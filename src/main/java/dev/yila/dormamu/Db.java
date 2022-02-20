@@ -2,7 +2,9 @@ package dev.yila.dormamu;
 
 import dev.yila.dormamu.test.Tables;
 
-public class Db {
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+public class Db implements ChangesCalculator {
 
     private final Tables tables;
 
@@ -11,7 +13,13 @@ public class Db {
     }
 
     public DbValidations when(String description, Runnable runnable) {
-        //TODO
-        return new DbValidations(new Changes());
+        DbState dbState = tables.getState();
+        assertDoesNotThrow(runnable::run, "Exception in when : " + description);
+        Changes changes = between(dbState, tables.getState());
+        return new DbValidations(changes);
+    }
+
+    public Tables getTables() {
+        return this.tables;
     }
 }

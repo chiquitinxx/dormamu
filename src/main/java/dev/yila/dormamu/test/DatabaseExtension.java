@@ -7,10 +7,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 public class DatabaseExtension implements ParameterResolver, TestInstancePostProcessor {
 
-    private static final String TABLES = "Tables";
+    private static final String TABLES_CLASS = "Tables";
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
@@ -19,11 +20,16 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        Tables tables = getStore(extensionContext).get(TABLES, Tables.class);
-        if (tables == null) {
+        Class<? extends Tables> clazz = getStore(extensionContext).get(TABLES_CLASS, Class.class);
+        if (clazz == null) {
             throw new RuntimeException("Missing Tables implementation definition using @DatabaseTables(ClassExtendingTables.class)");
         }
-        return new Db(tables);
+        try {
+            Tables tables = createNewInstance(clazz);
+            return new Db(tables);
+        } catch (Exception ex) {
+            throw new RuntimeException("Error creating implementation class of Tables: " + clazz.getCanonicalName());
+        }
     }
 
     @Override
@@ -33,8 +39,7 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
             DatabaseTables tablesAnnotation = (DatabaseTables) Arrays.stream(annotations)
                     .filter(annotation -> annotation.annotationType().equals(DatabaseTables.class))
                     .findAny().orElseThrow(() -> new RuntimeException("Not found @DatabaseChanges annotation."));
-            Tables tables = createNewInstance(tablesAnnotation.value());
-            getStore(extensionContext).put(TABLES, tables);
+            getStore(extensionContext).put(TABLES_CLASS, tablesAnnotation.value());
         }
     }
 
