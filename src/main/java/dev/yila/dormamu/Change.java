@@ -15,6 +15,10 @@ public class Change {
         return new Change(tableName, ChangeType.DELETED_ROW, deletedRow, null);
     }
 
+    public static Change update(String tableName, Row before, Row after) {
+        return new Change(tableName, ChangeType.UPDATED_ROW, before, after);
+    }
+
     private Change(String tableName, ChangeType type, Row before, Row after) {
         this.tableName = tableName;
         this.type = type;

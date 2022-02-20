@@ -38,6 +38,12 @@ public class Changes {
         return this;
     }
 
+    public Changes updatedRowIn(String table) {
+        Change deletionChange = findOneChangeInTable(table, change -> change.getType().equals(ChangeType.UPDATED_ROW));
+        validatedChanges.add(deletionChange);
+        return this;
+    }
+
     public boolean allValidated() {
         assertEquals(validatedChanges.size(), changes.size(), "Number of db changes: " + changes.size()
                 + ", number of changes validated: " + validatedChanges.size());

@@ -33,4 +33,9 @@ public class FakeRow implements Row {
         }
         return Optional.empty();
     }
+
+    @Override
+    public <T> Row putColumnValue(String columnName, T columnValue) {
+        return new FakeRow(this.id, this.columnName, (String) columnValue);
+    }
 }

@@ -24,8 +24,15 @@ public interface ChangesCalculator {
     }
 
     private Collection<? extends Change> rowsUpdated(String table, List<Row> rowsBefore, List<Row> rowsAfter) {
-        //TODO
-        return Collections.emptySet();
+        Set<Change> updated = new HashSet<>();
+        rowsBefore.forEach(row -> {
+            rowsAfter.stream()
+                    .filter(rowAfter -> rowAfter.getId().equals(row.getId()))
+                    .findFirst()
+                    .flatMap(rowAfter -> rowAfter.equalColumns(row) ? Optional.empty() : Optional.of(rowAfter))
+                    .ifPresent(rowAfter -> updated.add(Change.update(table, row, rowAfter)));
+        });
+        return updated;
     }
 
     private Collection<? extends Change> rowsDeleted(String table, List<Row> rowsBefore, List<Row> rowsAfter) {

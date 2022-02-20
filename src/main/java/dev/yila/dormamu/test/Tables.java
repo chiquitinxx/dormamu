@@ -4,7 +4,7 @@ import dev.yila.dormamu.DbState;
 
 public interface Tables {
     /**
-     * Get immutable tables state
+     * Get tables immutable state
      * @return
      */
     DbState getState();

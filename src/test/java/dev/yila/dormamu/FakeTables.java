@@ -33,7 +33,19 @@ public class FakeTables implements Tables {
         return new DbState(state);
     }
 
-    public void deleteRow(String table, Row row) {
+    public FakeTables deleteRow(String table, Row row) {
         this.tables.get(table).remove(row);
+        return this;
+    }
+
+    public FakeTables updateRow(String table, String id, String columnName, String columnValue) {
+        Row newRow = this.tables.get(table)
+                .stream().filter(row -> row.getId().equals(id))
+                .findFirst()
+                .map(row -> {
+                    this.tables.get(table).remove(row);
+                    return row.putColumnValue(columnName, columnValue);
+                }).orElseThrow(() -> new RuntimeException("Not found row to update with id " + id));
+        return insertRow(table, newRow);
     }
 }

@@ -13,7 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ExtendWith(DatabaseExtension.class)
 public class TableChangesTest {
 
-    private final static Row ROW_ONE = new FakeRow("1", "name", "Me");
+    private final static String ID_ONE = "1";
+    private final static String COLUMN_ONE = "name";
+    private final static Row ROW_ONE = new FakeRow(ID_ONE, COLUMN_ONE, "Me");
+    private final static Row ROW_TWO = new FakeRow("2", COLUMN_ONE, "Two");
 
     @Test
     void noChanges(Db db) {
@@ -46,6 +49,28 @@ public class TableChangesTest {
                 getFakeTables(db).deleteRow(TABLE_ONE, ROW_ONE)
         ).expect(changes -> changes.areExactly(1)
                 .deletedRowIn(TABLE_ONE)
+                .allValidated());
+    }
+
+    @Test
+    void addAndDeleteRow(Db db) {
+        getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE);
+        db.when("Add and delete row in table " + TABLE_ONE, () ->
+                getFakeTables(db).deleteRow(TABLE_ONE, ROW_ONE)
+                        .insertRow(TABLE_ONE, ROW_TWO)
+        ).expect(changes -> changes.areExactly(2)
+                .deletedRowIn(TABLE_ONE)
+                .newRowIn(TABLE_ONE)
+                .allValidated());
+    }
+
+    @Test
+    void updateRow(Db db) {
+        getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE);
+        db.when("Add and delete row in table " + TABLE_ONE, () ->
+                getFakeTables(db).updateRow(TABLE_ONE, ID_ONE, COLUMN_ONE, "new value")
+        ).expect(changes -> changes.areExactly(1)
+                .updatedRowIn(TABLE_ONE)
                 .allValidated());
     }
 
