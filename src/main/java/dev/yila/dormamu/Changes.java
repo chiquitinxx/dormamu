@@ -9,11 +9,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class Changes {
 
     private final Set<Change> changes;
+    private final String description;
     private Set<Change> validatedChanges;
 
-    public Changes(Set<Change> changes) {
+    public Changes(Set<Change> changes, String description) {
         Objects.requireNonNull(changes);
         this.changes = changes;
+        this.description = description;
         this.validatedChanges = new HashSet<>();
     }
 
@@ -45,9 +47,28 @@ public class Changes {
     }
 
     public boolean allValidated() {
-        assertEquals(validatedChanges.size(), changes.size(), "Number of db changes: " + changes.size()
-                + ", number of changes validated: " + validatedChanges.size());
-        return validatedChanges.size() == changes.size();
+        boolean somethingNotValidate = validatedChanges.size() != changes.size();
+        if (somethingNotValidate) {
+            System.out.println(getResultAsString());
+            fail("Number of db changes: " + changes.size() + ", number of changes validated: " + validatedChanges.size());
+        }
+        return true;
+    }
+
+    public String getResultAsString() {
+        String allChanges = "\r\n";
+        if (changes.size() > 0) {
+            allChanges += "-- " + description + "... validated (✅) or not validated(❌)\r\n";
+            for (Change change : changes) {
+                if (validatedChanges.contains(change)) {
+                    allChanges += "✅ " + change.toString() + "\r\n";
+                } else {
+                    allChanges += "❌ " + change.toString() + "\r\n";
+                }
+            }
+            allChanges += "-- End changes" + "\r\n";
+        }
+        return allChanges;
     }
 
     private Change findOneChangeInTable(String table, Predicate<Change> predicate) {

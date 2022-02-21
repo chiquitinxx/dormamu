@@ -41,4 +41,18 @@ public class Change {
     public Row getAfter() {
         return after;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Change
+                && this.tableName.equals(((Change) obj).tableName)
+                && this.type.equals(((Change) obj).type)
+                && this.after.equals(((Change) obj).after)
+                && this.before.equals(((Change) obj).before);
+    }
+
+    @Override
+    public String toString() {
+        return this.type.name() + " in table: " + this.tableName + " before: " + before + " after: " + after;
+    }
 }
