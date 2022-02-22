@@ -1,6 +1,7 @@
 package dev.yila.dormamu.test;
 
 import dev.yila.dormamu.Db;
+import dev.yila.dormamu.Tables;
 import org.junit.jupiter.api.extension.*;
 
 import java.io.File;
@@ -41,9 +42,9 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
     @Override
     public void postProcessTestInstance(Object test, ExtensionContext extensionContext) throws Exception {
         Annotation[] annotations = test.getClass().getAnnotations();
-        if (Arrays.stream(annotations).anyMatch(annotation -> annotation.annotationType().equals(DatabaseTables.class))) {
-            DatabaseTables tablesAnnotation = (DatabaseTables) Arrays.stream(annotations)
-                    .filter(annotation -> annotation.annotationType().equals(DatabaseTables.class))
+        if (Arrays.stream(annotations).anyMatch(annotation -> annotation.annotationType().equals(DbTables.class))) {
+            DbTables tablesAnnotation = (DbTables) Arrays.stream(annotations)
+                    .filter(annotation -> annotation.annotationType().equals(DbTables.class))
                     .findAny().orElseThrow(() -> new RuntimeException("Not found @DatabaseChanges annotation."));
             getStore(extensionContext).put(TABLES_CLASS, tablesAnnotation.value());
         }

@@ -5,6 +5,6 @@ import java.util.Optional;
 public interface Row {
     String getId();
     boolean equalColumns(Row row);
-    <T> Optional<T> getColumnValue(String columnName, Class<T> clazz);
-    <T> Row putColumnValue(String columnName, T columnValue);
+    String string(String columnName);
+    <T> Optional<T> value(String columnName, Class<T> clazz);
 }

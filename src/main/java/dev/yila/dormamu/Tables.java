@@ -1,11 +1,9 @@
-package dev.yila.dormamu.test;
-
-import dev.yila.dormamu.DbState;
+package dev.yila.dormamu;
 
 public interface Tables {
     /**
      * Get tables immutable state
      * @return
      */
-    DbState getState();
+    State getState();
 }

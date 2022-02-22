@@ -6,9 +6,9 @@ import java.util.stream.Stream;
 
 public interface ChangesCalculator {
 
-    default Changes between(DbState before, DbState after, String description) {
-        Set<Change> allChanges = before.getTablesRows().keySet().stream()
-                .map(table -> getTableChanges(table, before.getTablesRows().get(table), after.getTablesRows().get(table)))
+    default Changes between(State before, State after, String description) {
+        Set<Change> allChanges = before.getState().keySet().stream()
+                .map(table -> getTableChanges(table, before.getState().get(table), after.getState().get(table)))
                 .reduce(new HashSet<>(), (changes, tableChanges) ->
                         Stream.concat(changes.stream(), tableChanges.stream())
                                 .collect(Collectors.toSet()));

@@ -1,6 +1,6 @@
 package dev.yila.dormamu;
 
-import dev.yila.dormamu.test.DatabaseTables;
+import dev.yila.dormamu.test.DbTables;
 import dev.yila.dormamu.test.DatabaseExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +9,7 @@ import org.opentest4j.AssertionFailedError;
 import static dev.yila.dormamu.FakeTables.TABLE_ONE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@DatabaseTables(FakeTables.class)
+@DbTables(FakeTables.class)
 @ExtendWith(DatabaseExtension.class)
 public class TableChangesTest {
 
@@ -30,6 +30,16 @@ public class TableChangesTest {
             getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE)
         ).expect(changes -> changes.areExactly(1)
                 .newRowIn(TABLE_ONE)
+                .allValidated());
+    }
+
+    @Test
+    void validateRowData(Db db) {
+        db.when("Add a new row in table " + TABLE_ONE, () ->
+                getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE)
+        ).expect(changes -> changes.areExactly(1)
+                .newRowIn(TABLE_ONE, row -> row.value(COLUMN_ONE, String.class)
+                        .orElse("Column not found").equals("Me"))
                 .allValidated());
     }
 
@@ -71,6 +81,18 @@ public class TableChangesTest {
                 getFakeTables(db).updateRow(TABLE_ONE, ID_ONE, COLUMN_ONE, "new value")
         ).expect(changes -> changes.areExactly(1)
                 .updatedRowIn(TABLE_ONE)
+                .allValidated());
+    }
+
+    @Test
+    void validateUpdateRowColumns(Db db) {
+        getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE);
+        db.when("Add and delete row in table " + TABLE_ONE, () ->
+                getFakeTables(db).updateRow(TABLE_ONE, ID_ONE, COLUMN_ONE, "new value")
+        ).expect(changes -> changes.areExactly(1)
+                .updatedRowIn(TABLE_ONE, (before, after) ->
+                        before.string(COLUMN_ONE).equals("Me")
+                        && after.string(COLUMN_ONE).equals("new value"))
                 .allValidated());
     }
 

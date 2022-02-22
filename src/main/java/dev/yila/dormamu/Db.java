@@ -1,12 +1,11 @@
 package dev.yila.dormamu;
 
-import dev.yila.dormamu.test.Tables;
 import dev.yila.dormamu.test.ValidationChange;
 import dev.yila.dormamu.test.ValidationChangesStore;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class Db implements ChangesCalculator {
+public class Db<T extends Tables> implements ChangesCalculator {
 
     private final Tables tables;
     private final ValidationChangesStore validationChangesStore;
@@ -17,7 +16,7 @@ public class Db implements ChangesCalculator {
     }
 
     public DbValidations when(String description, Runnable runnable) {
-        DbState dbState = tables.getState();
+        State dbState = tables.getState();
         assertDoesNotThrow(runnable::run, "Exception in when : " + description);
         Changes changes = between(dbState, tables.getState(), description);
         addChangeToStore(description, changes);

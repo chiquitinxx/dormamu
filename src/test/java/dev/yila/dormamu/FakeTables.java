@@ -1,7 +1,5 @@
 package dev.yila.dormamu;
 
-import dev.yila.dormamu.test.Tables;
-
 import java.util.*;
 
 public class FakeTables implements Tables {
@@ -27,10 +25,10 @@ public class FakeTables implements Tables {
     }
 
     @Override
-    public DbState getState() {
+    public State getState() {
         Map<String, List<Row>> state = new HashMap<>();
         this.tables.forEach((name, rows) -> state.put(name, new ArrayList<>(rows)));
-        return new DbState(state);
+        return new State(state);
     }
 
     public FakeTables deleteRow(String table, Row row) {
@@ -44,7 +42,7 @@ public class FakeTables implements Tables {
                 .findFirst()
                 .map(row -> {
                     this.tables.get(table).remove(row);
-                    return row.putColumnValue(columnName, columnValue);
+                    return new FakeRow(row.getId(), columnName, columnValue);
                 }).orElseThrow(() -> new RuntimeException("Not found row to update with id " + id));
         return insertRow(table, newRow);
     }

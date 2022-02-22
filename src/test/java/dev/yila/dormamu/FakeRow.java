@@ -21,21 +21,24 @@ public class FakeRow implements Row {
 
     @Override
     public boolean equalColumns(Row row) {
-        return row.getColumnValue(this.columnName, String.class)
+        return row.value(this.columnName, String.class)
                 .map(value -> value.equals(this.columnValue))
                 .orElse(false);
     }
 
     @Override
-    public <T> Optional<T> getColumnValue(String columnName, Class<T> clazz) {
+    public String string(String columnName) {
+        if (columnName.equals(this.columnName)) {
+            return columnValue;
+        }
+        return null;
+    }
+
+    @Override
+    public <T> Optional<T> value(String columnName, Class<T> clazz) {
         if (columnName.equals(this.columnName)) {
             return (Optional<T>) Optional.of(columnValue);
         }
         return Optional.empty();
-    }
-
-    @Override
-    public <T> Row putColumnValue(String columnName, T columnValue) {
-        return new FakeRow(this.id, this.columnName, (String) columnValue);
     }
 }

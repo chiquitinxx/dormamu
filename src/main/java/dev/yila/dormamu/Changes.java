@@ -1,6 +1,7 @@
 package dev.yila.dormamu;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -28,22 +29,37 @@ public class Changes {
         return this;
     }
 
-    public Changes newRowIn(String table) {
-        Change insertionChange = findOneChangeInTable(table, change -> change.getType().equals(ChangeType.NEW_ROW));
+    public Changes newRowIn(String table, Predicate<Row> newRowValidations) {
+        Change insertionChange = findOneChangeInTable(table, change -> change.getType().equals(ChangeType.NEW_ROW)
+                && newRowValidations.test(change.getAfter()));
         validatedChanges.add(insertionChange);
         return this;
     }
 
+    public Changes newRowIn(String table) {
+        return newRowIn(table, row -> true);
+    }
+
+    public Changes deletedRowIn(String table, Predicate<Row> deletedRowValidations) {
+        Change deletionChange = findOneChangeInTable(table, change -> change.getType().equals(ChangeType.DELETED_ROW)
+                && deletedRowValidations.test(change.getBefore()));
+        validatedChanges.add(deletionChange);
+        return this;
+    }
+
     public Changes deletedRowIn(String table) {
-        Change deletionChange = findOneChangeInTable(table, change -> change.getType().equals(ChangeType.DELETED_ROW));
+        return deletedRowIn(table, row -> true);
+    }
+
+    public Changes updatedRowIn(String table, BiPredicate<Row, Row> validation) {
+        Change deletionChange = findOneChangeInTable(table, change -> change.getType().equals(ChangeType.UPDATED_ROW)
+                && validation.test(change.getBefore(), change.getAfter()));
         validatedChanges.add(deletionChange);
         return this;
     }
 
     public Changes updatedRowIn(String table) {
-        Change deletionChange = findOneChangeInTable(table, change -> change.getType().equals(ChangeType.UPDATED_ROW));
-        validatedChanges.add(deletionChange);
-        return this;
+        return updatedRowIn(table, (before, after) -> true);
     }
 
     public boolean allValidated() {
