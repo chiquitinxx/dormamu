@@ -5,14 +5,18 @@ import dev.yila.dormamu.test.ValidationChangesStore;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class Db<T extends Tables> implements ChangesCalculator {
+public class Db implements ChangesCalculator {
 
-    private final Tables tables;
     private final ValidationChangesStore validationChangesStore;
+    private Tables tables;
 
-    public Db(Tables tables, ValidationChangesStore validationChangesStore) {
-        this.tables = tables;
+    public Db(ValidationChangesStore validationChangesStore) {
         this.validationChangesStore = validationChangesStore;
+    }
+
+    public Db with(Tables tables) {
+        this.tables = tables;
+        return this;
     }
 
     public DbValidations when(String description, Runnable runnable) {

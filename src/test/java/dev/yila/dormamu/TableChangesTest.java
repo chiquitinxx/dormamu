@@ -63,6 +63,19 @@ public class TableChangesTest {
     }
 
     @Test
+    void validationsOnlyCanMatchOneChange(Db db) {
+        getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE).insertRow(TABLE_ONE, ROW_TWO);
+        assertThrows(AssertionFailedError.class, () ->
+                db.when("Delete row in table " + TABLE_ONE, () ->
+                        getFakeTables(db).deleteRow(TABLE_ONE, ROW_ONE)
+                                .deleteRow(TABLE_ONE, ROW_TWO)
+                ).expect(changes -> changes
+                        .deletedRowIn(TABLE_ONE)
+                        .allValidated())
+        );
+    }
+
+    @Test
     void addAndDeleteRow(Db db) {
         getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE);
         db.when("Add and delete row in table " + TABLE_ONE, () ->
@@ -92,7 +105,8 @@ public class TableChangesTest {
         ).expect(changes -> changes.areExactly(1)
                 .updatedRowIn(TABLE_ONE, (before, after) ->
                         before.string(COLUMN_ONE).equals("Me")
-                        && after.string(COLUMN_ONE).equals("new value"))
+                        && after.string(COLUMN_ONE).equals("new value")
+                        && !before.equals(after))
                 .allValidated());
     }
 

@@ -34,7 +34,7 @@ public class ValidationChange {
 
     @Override
     public String toString() {
-        return "Change: " + description + " in class: " + testClassName
-                + " in method: " + testName + changes.getResultAsString();
+        return "Change: " + getDescription() + " in class: " + getTestClassName()
+                + " in method: " + getTestName() + "\r\n" + changes.getResultAsString();
     }
 }

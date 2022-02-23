@@ -29,7 +29,7 @@ public interface ChangesCalculator {
             rowsAfter.stream()
                     .filter(rowAfter -> rowAfter.getId().equals(row.getId()))
                     .findFirst()
-                    .flatMap(rowAfter -> rowAfter.equalColumns(row) ? Optional.empty() : Optional.of(rowAfter))
+                    .flatMap(rowAfter -> rowAfter.equalValues(row) ? Optional.empty() : Optional.of(rowAfter))
                     .ifPresent(rowAfter -> updated.add(Change.update(table, row, rowAfter)));
         });
         return updated;

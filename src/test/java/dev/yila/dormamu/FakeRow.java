@@ -1,5 +1,6 @@
 package dev.yila.dormamu;
 
+import java.util.Map;
 import java.util.Optional;
 
 public class FakeRow implements Row {
@@ -20,7 +21,12 @@ public class FakeRow implements Row {
     }
 
     @Override
-    public boolean equalColumns(Row row) {
+    public Map<String, ?> getColumns() {
+        return Map.of("id", id, columnName, columnValue);
+    }
+
+    @Override
+    public boolean equalValues(Row row) {
         return row.value(this.columnName, String.class)
                 .map(value -> value.equals(this.columnValue))
                 .orElse(false);

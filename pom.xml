@@ -57,19 +57,26 @@
     <maven.javadoc.plugin>3.3.1</maven.javadoc.plugin>
     <maven.gpg.plugin>3.0.1</maven.gpg.plugin>
     <maven.release.plugin>2.5.3</maven.release.plugin>
+    <lombok.version>1.18.22</lombok.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter}</version>
-      <scope>test</scope>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>${junit.jupiter}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -102,7 +109,7 @@
         <artifactId>pitest-maven</artifactId>
         <version>${pitest.version}</version>
         <configuration>
-          <coverageThreshold>99</coverageThreshold>
+          <coverageThreshold>100</coverageThreshold>
         </configuration>
         <dependencies>
           <dependency>

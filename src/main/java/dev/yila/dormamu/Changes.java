@@ -1,5 +1,7 @@
 package dev.yila.dormamu;
 
+import dev.yila.dormamu.test.DatabaseExtension;
+
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -65,7 +67,7 @@ public class Changes {
     public boolean allValidated() {
         boolean somethingNotValidate = validatedChanges.size() != changes.size();
         if (somethingNotValidate) {
-            System.out.println(getResultAsString());
+            DatabaseExtension.showMessageInConsole(getResultAsString());
             fail("Number of db changes: " + changes.size() + ", number of changes validated: " + validatedChanges.size());
         }
         return true;

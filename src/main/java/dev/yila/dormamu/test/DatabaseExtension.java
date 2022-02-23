@@ -29,14 +29,16 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         Class<? extends Tables> clazz = getStore(extensionContext).get(TABLES_CLASS, Class.class);
         if (clazz == null) {
-            throw new RuntimeException("Missing Tables implementation definition using @DatabaseTables(ClassExtendingTables.class)");
+            return new Db(validationChangesStore);
         }
+        Tables tables;
         try {
-            Tables tables = createNewInstance(clazz);
-            return new Db(tables, validationChangesStore);
+            tables = createNewInstance(clazz);
+            return new Db(validationChangesStore).with(tables);
         } catch (Exception ex) {
-            throw new RuntimeException("Error creating implementation class of Tables: " + clazz.getCanonicalName());
+            showMessageInConsole("Error creating implementation class of Tables: " + clazz.getCanonicalName());
         }
+        return new Db(validationChangesStore);
     }
 
     @Override
@@ -73,6 +75,10 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
                 .collect(Collectors.toList()));
     }
 
+    public static void showMessageInConsole(String message) {
+        System.out.println(message);
+    }
+
     private ValidationChange addMethodName(ValidationChange change, ExtensionContext extensionContext) {
         if (change.getTestName() == null) {
             return new ValidationChange(
@@ -86,15 +92,12 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
     }
 
     private ValidationChange addTestClassName(ValidationChange change, ExtensionContext extensionContext) {
-        if (change.getTestClassName() == null) {
-            return new ValidationChange(
-                    extensionContext.getTestClass().map(Class::getCanonicalName).orElse("unknown"),
-                    change.getTestName(),
-                    change.getDescription(),
-                    change.getChanges()
-            );
-        }
-        return change;
+        return new ValidationChange(
+                extensionContext.getTestClass().map(Class::getCanonicalName).orElse("unknown"),
+                change.getTestName(),
+                change.getDescription(),
+                change.getChanges()
+        );
     }
 
     private void generateReport(List<ValidationChange> list) throws IOException {
@@ -102,6 +105,6 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
         FileWriter writer = new FileWriter(tmpFile);
         writer.write(list.stream().map(ValidationChange::toString).collect(Collectors.joining("\r\n")));
         writer.close();
-        System.out.println("Database validations report generated in: " + tmpFile.getAbsolutePath());
+        showMessageInConsole("Database validations report generated in: " + tmpFile.getAbsolutePath());
     }
 }
