@@ -2,6 +2,7 @@ package dev.yila.dormamu.test;
 
 import dev.yila.dormamu.Db;
 import dev.yila.dormamu.Tables;
+import dev.yila.dormamu.report.DefaultReportGenerator;
 import org.junit.jupiter.api.extension.*;
 
 import java.io.File;
@@ -34,11 +35,13 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
         Tables tables;
         try {
             tables = createNewInstance(clazz);
-            return new Db(validationChangesStore).with(tables);
+            return new Db(validationChangesStore)
+                    .withTables(tables)
+                    .withReportGenerator(new DefaultReportGenerator());
         } catch (Exception ex) {
             showMessageInConsole("Error creating implementation class of Tables: " + clazz.getCanonicalName());
         }
-        return new Db(validationChangesStore);
+        return new Db(validationChangesStore).withReportGenerator(new DefaultReportGenerator());
     }
 
     @Override
@@ -85,7 +88,9 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
                     null,
                     extensionContext.getTestMethod().map(Method::getName).orElse("undefined"),
                     change.getDescription(),
-                    change.getChanges()
+                    change.getChanges(),
+                    change.getBefore(),
+                    change.getAfter()
             );
         }
         return change;
@@ -96,7 +101,9 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
                 extensionContext.getTestClass().map(Class::getCanonicalName).orElse("unknown"),
                 change.getTestName(),
                 change.getDescription(),
-                change.getChanges()
+                change.getChanges(),
+                change.getBefore(),
+                change.getAfter()
         );
     }
 

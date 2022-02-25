@@ -66,11 +66,7 @@ public class Changes {
 
     public boolean allValidated() {
         boolean somethingNotValidate = validatedChanges.size() != changes.size();
-        if (somethingNotValidate) {
-            DatabaseExtension.showMessageInConsole(getResultAsString());
-            fail("Number of db changes: " + changes.size() + ", number of changes validated: " + validatedChanges.size());
-        }
-        return true;
+        return !somethingNotValidate;
     }
 
     public String getResultAsString() {
@@ -87,6 +83,10 @@ public class Changes {
             allChanges += "-- End changes" + "\r\n";
         }
         return allChanges;
+    }
+
+    public boolean validationsPassed() {
+        return isEmpty() || allValidated();
     }
 
     private Change findOneChangeInTable(String table, Predicate<Change> predicate) {

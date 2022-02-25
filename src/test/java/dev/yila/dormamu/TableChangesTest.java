@@ -66,7 +66,7 @@ public class TableChangesTest {
     void validationsOnlyCanMatchOneChange(Db db) {
         getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE).insertRow(TABLE_ONE, ROW_TWO);
         assertThrows(AssertionFailedError.class, () ->
-                db.when("Delete row in table " + TABLE_ONE, () ->
+                db.when("Delete row not identified", () ->
                         getFakeTables(db).deleteRow(TABLE_ONE, ROW_ONE)
                                 .deleteRow(TABLE_ONE, ROW_TWO)
                 ).expect(changes -> changes

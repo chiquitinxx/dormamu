@@ -1,8 +1,10 @@
 package dev.yila.dormamu;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @EqualsAndHashCode
+@ToString
 public class Change {
 
     private final String tableName;
