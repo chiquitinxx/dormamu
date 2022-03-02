@@ -107,7 +107,7 @@ public class TableChangesTest {
                         before.string(COLUMN_ONE).equals("Me")
                         && after.string(COLUMN_ONE).equals("new value")
                         && !before.equals(after))
-                .allValidated());
+                .allValidated() && changes.validationsPassed());
     }
 
     private FakeTables getFakeTables(Db db) {

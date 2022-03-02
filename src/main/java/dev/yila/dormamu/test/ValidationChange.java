@@ -6,28 +6,30 @@ import dev.yila.dormamu.report.ReportData;
 public class ValidationChange {
 
     private final String testClassName;
-    private final String testName;
+    private final String testMethodName;
     private final String description;
     private final Changes changes;
     private final ReportData before;
     private final ReportData after;
+    private final boolean testSuccess;
 
-    public ValidationChange(String testClassName, String testName, String description,
-                            Changes changes, ReportData before, ReportData after) {
+    public ValidationChange(String testClassName, String testMethodName, String description,
+                            Changes changes, ReportData before, ReportData after, boolean testSuccess) {
         this.testClassName = testClassName;
-        this.testName = testName;
+        this.testMethodName = testMethodName;
         this.description = description;
         this.changes = changes;
         this.before = before;
         this.after = after;
+        this.testSuccess = testSuccess;
     }
 
     public String getTestClassName() {
         return testClassName;
     }
 
-    public String getTestName() {
-        return testName;
+    public String getTestMethodName() {
+        return testMethodName;
     }
 
     public String getDescription() {
@@ -46,9 +48,14 @@ public class ValidationChange {
         return after;
     }
 
+    public boolean isTestSuccess() {
+        return testSuccess;
+    }
+
     @Override
     public String toString() {
         return "Change: " + getDescription() + " in class: " + getTestClassName()
-                + " in method: " + getTestName() + "\r\n" + changes.getResultAsString();
+                + " in method: " + getTestMethodName() + " with result: " + (isTestSuccess() ? "SUCCESS" : "FAIL")
+                + "\r\n" + changes.getResultAsString();
     }
 }

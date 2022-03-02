@@ -72,7 +72,7 @@ public class Changes {
     public String getResultAsString() {
         String allChanges = "\r\n";
         if (changes.size() > 0) {
-            allChanges += "-- " + description + "... validated (✅) or not validated(❌)\r\n";
+            allChanges += "-- " + description + (allValidated() ? " (SUCCESS)" : " (FAIL)") + "... validated (v) or not validated(x)\r\n";
             for (Change change : changes) {
                 if (validatedChanges.contains(change)) {
                     allChanges += "✅ " + change.toString() + "\r\n";

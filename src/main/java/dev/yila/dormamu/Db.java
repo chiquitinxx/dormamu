@@ -1,7 +1,7 @@
 package dev.yila.dormamu;
 
 import dev.yila.dormamu.report.ReportData;
-import dev.yila.dormamu.report.ReportGenerator;
+import dev.yila.dormamu.report.ReportDataProvider;
 import dev.yila.dormamu.test.ValidationChange;
 import dev.yila.dormamu.test.ValidationChangesStore;
 
@@ -11,7 +11,7 @@ public class Db implements ChangesCalculator {
 
     private final ValidationChangesStore validationChangesStore;
     private Tables tables;
-    private ReportGenerator reportGenerator;
+    private ReportDataProvider reportDataProvider;
 
     public Db(ValidationChangesStore validationChangesStore) {
         this.validationChangesStore = validationChangesStore;
@@ -22,23 +22,24 @@ public class Db implements ChangesCalculator {
         return this;
     }
 
-    public Db withReportGenerator(ReportGenerator reportGenerator) {
-        this.reportGenerator = reportGenerator;
+    public Db withReportDataProvider(ReportDataProvider reportGenerator) {
+        this.reportDataProvider = reportGenerator;
         return this;
     }
 
     public DbValidations when(String description, Runnable runnable) {
         State dbState = tables.getState();
-        ReportData before = reportGenerator.before(tables);
+        ReportData before = reportDataProvider != null ? reportDataProvider.before(tables) : null;
         assertDoesNotThrow(runnable::run, "Exception in when : " + description);
         Changes changes = between(dbState, tables.getState(), description);
-        addChangeToStore(description, changes, before, reportGenerator.after(tables));
+        ReportData after = reportDataProvider != null ? reportDataProvider.after(tables) : null;
+        addChangeToStore(description, changes, before, after);
         return new DbValidations(changes);
     }
 
     private void addChangeToStore(String description, Changes changes, ReportData before, ReportData after) {
         validationChangesStore.putChange(new ValidationChange(
-                null, null, description, changes, before, after));
+                null, null, description, changes, before, after, false));
     }
 
     public Tables getTables() {
