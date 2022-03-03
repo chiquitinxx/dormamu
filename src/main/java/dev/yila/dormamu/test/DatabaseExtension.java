@@ -2,21 +2,24 @@ package dev.yila.dormamu.test;
 
 import dev.yila.dormamu.Db;
 import dev.yila.dormamu.Tables;
+import dev.yila.dormamu.report.DbReport;
 import dev.yila.dormamu.report.DefaultReportGenerator;
+import dev.yila.dormamu.report.ReportDataProvider;
 import dev.yila.dormamu.report.ReportGenerator;
 import org.junit.jupiter.api.extension.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DatabaseExtension implements ParameterResolver, TestInstancePostProcessor, AfterEachCallback, AfterAllCallback {
 
     private static final String TABLES_CLASS = "Tables";
     private static final String REPORT_GENERATOR = "ReportGenerator";
+    private static final String REPORT_DATA_PROVIDER = "ReportDataProvider";
     private ValidationChangesStore validationChangesStore = new ValidationChangesStore();
 
     @Override
@@ -29,13 +32,10 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
         Db db = new Db(validationChangesStore);
         Class<? extends Tables> tablesClass = getStore(extensionContext).get(TABLES_CLASS, Class.class);
         if (tablesClass != null) {
-            Tables tables;
-            try {
-                tables = createNewInstance(tablesClass);
-                db = db.withTables(tables);
-            } catch (Exception ex) {
-                showMessageInConsole("Error creating implementation class of Tables: " + tablesClass.getCanonicalName());
-            }
+            Db finalDb = db;
+            db = createNewInstance(tablesClass, Tables.class)
+                    .map(db::withTables)
+                    .orElseGet(() -> finalDb);
         }
         return db;
     }
@@ -43,18 +43,35 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
     @Override
     public void postProcessTestInstance(Object test, ExtensionContext extensionContext) throws Exception {
         Annotation[] annotations = test.getClass().getAnnotations();
-        if (Arrays.stream(annotations).anyMatch(annotation -> annotation.annotationType().equals(DbTables.class))) {
-            DbTables tablesAnnotation = (DbTables) Arrays.stream(annotations)
-                    .filter(annotation -> annotation.annotationType().equals(DbTables.class))
-                    .findAny().orElseThrow(() -> new RuntimeException("Not found @DatabaseChanges annotation."));
-            getStore(extensionContext).put(TABLES_CLASS, tablesAnnotation.value());
-        }
-        getStore(extensionContext).put(REPORT_GENERATOR, new DefaultReportGenerator());
+        Arrays.stream(annotations)
+                .filter(annotation -> annotation.annotationType().equals(DbTables.class))
+                .map(DbTables.class::cast)
+                .findAny()
+                .ifPresent(dbTables -> getStore(extensionContext).put(TABLES_CLASS, dbTables.value()));
+        Arrays.stream(annotations)
+            .filter(annotation -> annotation.annotationType().equals(DbReport.class))
+            .map(DbReport.class::cast)
+            .findAny()
+            .ifPresent((DbReport annotation) -> {
+                if (annotation.generator() != null) {
+                    createNewInstance(annotation.generator(), ReportGenerator.class)
+                            .ifPresent(reportGenerator -> getStore(extensionContext).put(REPORT_GENERATOR, reportGenerator));
+                }
+                if (annotation.dataProvider() != null) {
+                    createNewInstance(annotation.dataProvider(), ReportDataProvider.class)
+                            .ifPresent(reportDataProvider -> getStore(extensionContext).put(REPORT_DATA_PROVIDER, reportDataProvider));
+                }
+            });
     }
 
-    private Tables createNewInstance(Class<? extends Tables> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        Constructor constructor = clazz.getDeclaredConstructor();
-        return (Tables) constructor.newInstance();
+    private <T> Optional<T> createNewInstance(Class clazz, Class<T> type) {
+        try {
+            Constructor constructor = clazz.getDeclaredConstructor();
+            return Optional.of(type.cast(constructor.newInstance()));
+        } catch (Exception e) {
+            showMessageInConsole("Error creating instance of type: " + type.getCanonicalName());
+            return Optional.empty();
+        }
     }
 
     private ExtensionContext.Store getStore(ExtensionContext context) {
@@ -71,6 +88,9 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
     @Override
     public void afterAll(ExtensionContext extensionContext) throws Exception {
         ReportGenerator reportGenerator = getStore(extensionContext).get(REPORT_GENERATOR, ReportGenerator.class);
+        if (reportGenerator == null) {
+            reportGenerator = new DefaultReportGenerator();
+        }
         reportGenerator.generate(validationChangesStore.getChanges().stream()
             .map(change -> addTestClassName(change, extensionContext))
             .collect(Collectors.toList()));
