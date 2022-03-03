@@ -37,6 +37,13 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
                     .map(db::withTables)
                     .orElseGet(() -> finalDb);
         }
+        Class<? extends ReportDataProvider> reportDataProvider = getStore(extensionContext).get(REPORT_DATA_PROVIDER, Class.class);
+        if (reportDataProvider != null) {
+            Db finalDb = db;
+            db = createNewInstance(tablesClass, ReportDataProvider.class)
+                    .map(db::withReportDataProvider)
+                    .orElseGet(() -> finalDb);
+        }
         return db;
     }
 
@@ -48,34 +55,7 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
                 .map(DbTables.class::cast)
                 .findAny()
                 .ifPresent(dbTables -> getStore(extensionContext).put(TABLES_CLASS, dbTables.value()));
-        Arrays.stream(annotations)
-            .filter(annotation -> annotation.annotationType().equals(DbReport.class))
-            .map(DbReport.class::cast)
-            .findAny()
-            .ifPresent((DbReport annotation) -> {
-                if (annotation.generator() != null) {
-                    createNewInstance(annotation.generator(), ReportGenerator.class)
-                            .ifPresent(reportGenerator -> getStore(extensionContext).put(REPORT_GENERATOR, reportGenerator));
-                }
-                if (annotation.dataProvider() != null) {
-                    createNewInstance(annotation.dataProvider(), ReportDataProvider.class)
-                            .ifPresent(reportDataProvider -> getStore(extensionContext).put(REPORT_DATA_PROVIDER, reportDataProvider));
-                }
-            });
-    }
-
-    private <T> Optional<T> createNewInstance(Class clazz, Class<T> type) {
-        try {
-            Constructor constructor = clazz.getDeclaredConstructor();
-            return Optional.of(type.cast(constructor.newInstance()));
-        } catch (Exception e) {
-            showMessageInConsole("Error creating instance of type: " + type.getCanonicalName());
-            return Optional.empty();
-        }
-    }
-
-    private ExtensionContext.Store getStore(ExtensionContext context) {
-        return context.getStore(ExtensionContext.Namespace.create(getClass()));
+        readDbReportAnnotation(extensionContext, annotations);
     }
 
     @Override
@@ -98,6 +78,36 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
 
     public static void showMessageInConsole(String message) {
         System.out.println(message);
+    }
+
+    private void readDbReportAnnotation(ExtensionContext extensionContext, Annotation[] annotations) {
+        Arrays.stream(annotations)
+                .filter(annotation -> annotation.annotationType().equals(DbReport.class))
+                .map(DbReport.class::cast)
+                .findAny()
+                .ifPresent((DbReport annotation) -> {
+                    if (annotation.generator() != null) {
+                        createNewInstance(annotation.generator(), ReportGenerator.class)
+                                .ifPresent(reportGenerator -> getStore(extensionContext).put(REPORT_GENERATOR, reportGenerator));
+                    }
+                    if (annotation.dataProvider() != null) {
+                        getStore(extensionContext).put(REPORT_DATA_PROVIDER, annotation.dataProvider());
+                    }
+                });
+    }
+
+    private <T> Optional<T> createNewInstance(Class clazz, Class<T> type) {
+        try {
+            Constructor constructor = clazz.getDeclaredConstructor();
+            return Optional.of(type.cast(constructor.newInstance()));
+        } catch (Exception e) {
+            showMessageInConsole("Error creating instance of type: " + type.getCanonicalName());
+            return Optional.empty();
+        }
+    }
+
+    private ExtensionContext.Store getStore(ExtensionContext context) {
+        return context.getStore(ExtensionContext.Namespace.create(getClass()));
     }
 
     private ValidationChange addMethodNameAndTestResult(ValidationChange change, ExtensionContext extensionContext) {
