@@ -6,13 +6,13 @@ import java.util.stream.Stream;
 
 public interface ChangesCalculator {
 
-    default Changes between(State before, State after, String description) {
+    default Changes between(State before, State after) {
         Set<Change> allChanges = before.getState().keySet().stream()
                 .map(table -> getTableChanges(table, before.getState().get(table), after.getState().get(table)))
                 .reduce(new HashSet<>(), (changes, tableChanges) ->
                         Stream.concat(changes.stream(), tableChanges.stream())
                                 .collect(Collectors.toSet()));
-        return new Changes(allChanges, description);
+        return new Changes(allChanges);
     }
 
     private Set<Change> getTableChanges(String table, List<Row> rowsBefore, List<Row> rowsAfter) {

@@ -1,7 +1,5 @@
 package dev.yila.dormamu;
 
-import dev.yila.dormamu.test.DatabaseExtension;
-
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -12,13 +10,11 @@ import static org.junit.jupiter.api.Assertions.*;
 public class Changes {
 
     private final Set<Change> changes;
-    private final String description;
     private Set<Change> validatedChanges;
 
-    public Changes(Set<Change> changes, String description) {
+    public Changes(Set<Change> changes) {
         Objects.requireNonNull(changes);
         this.changes = changes;
-        this.description = description;
         this.validatedChanges = new HashSet<>();
     }
 
@@ -72,7 +68,7 @@ public class Changes {
     public String getResultAsString() {
         String allChanges = "\r\n";
         if (changes.size() > 0) {
-            allChanges += "-- " + description + (allValidated() ? " (SUCCESS)" : " (FAIL)") + "... validated (v) or not validated(x)\r\n";
+            allChanges += "-- " + (allValidated() ? " (SUCCESS)" : " (FAIL)") + "... validated (v) or not validated(x)\r\n";
             for (Change change : changes) {
                 if (validatedChanges.contains(change)) {
                     allChanges += "✅ " + change.toString() + "\r\n";

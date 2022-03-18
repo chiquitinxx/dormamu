@@ -40,7 +40,7 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
         Class<? extends ReportDataProvider> reportDataProvider = getStore(extensionContext).get(REPORT_DATA_PROVIDER, Class.class);
         if (reportDataProvider != null) {
             Db finalDb = db;
-            db = createNewInstance(tablesClass, ReportDataProvider.class)
+            db = createNewInstance(reportDataProvider, ReportDataProvider.class)
                     .map(db::withReportDataProvider)
                     .orElseGet(() -> finalDb);
         }
@@ -115,7 +115,6 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
             return new ValidationChange(
                     null,
                     extensionContext.getTestMethod().map(Method::getName).orElse("undefined"),
-                    change.getDescription(),
                     change.getChanges(),
                     change.getBefore(),
                     change.getAfter(),
@@ -129,7 +128,6 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
         return new ValidationChange(
                 extensionContext.getTestClass().map(Class::getCanonicalName).orElse("unknown"),
                 change.getTestMethodName(),
-                change.getDescription(),
                 change.getChanges(),
                 change.getBefore(),
                 change.getAfter(),

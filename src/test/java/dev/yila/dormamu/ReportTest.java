@@ -21,7 +21,7 @@ public class ReportTest {
         ReportDataProvider reportDataProvider = mock(ReportDataProvider.class);
         db.withReportDataProvider(reportDataProvider);
 
-        db.when("Do nothing", () -> {}).expect(Changes::isEmpty);
+        db.when(() -> {}).expect(Changes::isEmpty);
 
         verify(reportDataProvider).before(any());
         verify(reportDataProvider).after(any());

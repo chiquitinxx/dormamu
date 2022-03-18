@@ -1,9 +1,8 @@
 package dev.yila.dormamu;
 
-import dev.yila.dormamu.test.DatabaseExtension;
-
 import java.util.function.Function;
 
+import static dev.yila.dormamu.test.DatabaseExtension.showMessageInConsole;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DbValidations {
@@ -14,10 +13,10 @@ public class DbValidations {
         this.changes = changes;
     }
 
-    void expect(Function<Changes, Boolean> function) {
+    public void expect(Function<Changes, Boolean> function) {
         boolean result = function.apply(changes);
         if (!result) {
-            DatabaseExtension.showMessageInConsole(changes.getResultAsString());
+            showMessageInConsole(changes.getResultAsString());
             fail("Need to validate all changes done in database.");
         }
     }

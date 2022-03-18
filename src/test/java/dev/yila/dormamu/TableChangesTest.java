@@ -20,13 +20,12 @@ public class TableChangesTest {
 
     @Test
     void noChanges(Db db) {
-        db.when("Do nothing", () -> {})
-                .expect(Changes::isEmpty);
+        db.when(() -> {}).expect(Changes::isEmpty);
     }
 
     @Test
     void newRowInTable(Db db) {
-        db.when("Add a new row in table " + TABLE_ONE, () ->
+        db.when(() ->
             getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE)
         ).expect(changes -> changes.areExactly(1)
                 .newRowIn(TABLE_ONE)
@@ -35,7 +34,7 @@ public class TableChangesTest {
 
     @Test
     void validateRowData(Db db) {
-        db.when("Add a new row in table " + TABLE_ONE, () ->
+        db.when(() ->
                 getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE)
         ).expect(changes -> changes.areExactly(1)
                 .newRowIn(TABLE_ONE, row -> row.value(COLUMN_ONE, String.class)
@@ -46,17 +45,16 @@ public class TableChangesTest {
     @Test
     void changeShouldBeValidated(Db db) {
         assertThrows(AssertionFailedError.class, () -> {
-            db.when("Add a new row", () ->
-                getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE)
-            ).expect(Changes::allValidated);
+            db.when(() -> getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE))
+                    .expect(Changes::allValidated);
         });
     }
 
     @Test
     void deleteRowInTable(Db db) {
         getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE);
-        db.when("Delete row in table " + TABLE_ONE, () ->
-                getFakeTables(db).deleteRow(TABLE_ONE, ROW_ONE)
+        db.when(() -> getFakeTables(db)
+                .deleteRow(TABLE_ONE, ROW_ONE)
         ).expect(changes -> changes.areExactly(1)
                 .deletedRowIn(TABLE_ONE)
                 .allValidated());
@@ -66,8 +64,8 @@ public class TableChangesTest {
     void validationsOnlyCanMatchOneChange(Db db) {
         getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE).insertRow(TABLE_ONE, ROW_TWO);
         assertThrows(AssertionFailedError.class, () ->
-                db.when("Delete row not identified", () ->
-                        getFakeTables(db).deleteRow(TABLE_ONE, ROW_ONE)
+                db.when(() -> getFakeTables(db)
+                                .deleteRow(TABLE_ONE, ROW_ONE)
                                 .deleteRow(TABLE_ONE, ROW_TWO)
                 ).expect(changes -> changes
                         .deletedRowIn(TABLE_ONE)
@@ -78,8 +76,8 @@ public class TableChangesTest {
     @Test
     void addAndDeleteRow(Db db) {
         getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE);
-        db.when("Add and delete row in table " + TABLE_ONE, () ->
-                getFakeTables(db).deleteRow(TABLE_ONE, ROW_ONE)
+        db.when(() -> getFakeTables(db)
+                        .deleteRow(TABLE_ONE, ROW_ONE)
                         .insertRow(TABLE_ONE, ROW_TWO)
         ).expect(changes -> changes.areExactly(2)
                 .deletedRowIn(TABLE_ONE)
@@ -90,8 +88,8 @@ public class TableChangesTest {
     @Test
     void updateRow(Db db) {
         getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE);
-        db.when("Add and delete row in table " + TABLE_ONE, () ->
-                getFakeTables(db).updateRow(TABLE_ONE, ID_ONE, COLUMN_ONE, "new value")
+        db.when(() -> getFakeTables(db)
+                .updateRow(TABLE_ONE, ID_ONE, COLUMN_ONE, "new value")
         ).expect(changes -> changes.areExactly(1)
                 .updatedRowIn(TABLE_ONE)
                 .allValidated());
@@ -100,8 +98,8 @@ public class TableChangesTest {
     @Test
     void validateUpdateRowColumns(Db db) {
         getFakeTables(db).insertRow(TABLE_ONE, ROW_ONE);
-        db.when("Add and delete row in table " + TABLE_ONE, () ->
-                getFakeTables(db).updateRow(TABLE_ONE, ID_ONE, COLUMN_ONE, "new value")
+        db.when(() -> getFakeTables(db)
+                .updateRow(TABLE_ONE, ID_ONE, COLUMN_ONE, "new value")
         ).expect(changes -> changes.areExactly(1)
                 .updatedRowIn(TABLE_ONE, (before, after) ->
                         before.string(COLUMN_ONE).equals("Me")
