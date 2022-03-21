@@ -110,9 +110,9 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
         return context.getStore(ExtensionContext.Namespace.create(getClass()));
     }
 
-    private ValidationChange addMethodNameAndTestResult(ValidationChange change, ExtensionContext extensionContext) {
+    private DatabaseTestChange addMethodNameAndTestResult(DatabaseTestChange change, ExtensionContext extensionContext) {
         if (change.getTestMethodName() == null) {
-            return new ValidationChange(
+            return new DatabaseTestChange(
                     null,
                     extensionContext.getTestMethod().map(Method::getName).orElse("undefined"),
                     change.getChanges(),
@@ -124,8 +124,8 @@ public class DatabaseExtension implements ParameterResolver, TestInstancePostPro
         return change;
     }
 
-    private ValidationChange addTestClassName(ValidationChange change, ExtensionContext extensionContext) {
-        return new ValidationChange(
+    private DatabaseTestChange addTestClassName(DatabaseTestChange change, ExtensionContext extensionContext) {
+        return new DatabaseTestChange(
                 extensionContext.getTestClass().map(Class::getCanonicalName).orElse("unknown"),
                 change.getTestMethodName(),
                 change.getChanges(),

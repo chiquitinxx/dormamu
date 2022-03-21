@@ -3,7 +3,7 @@ package dev.yila.dormamu.test;
 import dev.yila.dormamu.Changes;
 import dev.yila.dormamu.report.ReportData;
 
-public class ValidationChange {
+public class DatabaseTestChange {
 
     private final String testClassName;
     private final String testMethodName;
@@ -12,8 +12,8 @@ public class ValidationChange {
     private final ReportData after;
     private final boolean testSuccess;
 
-    public ValidationChange(String testClassName, String testMethodName,
-                            Changes changes, ReportData before, ReportData after, boolean testSuccess) {
+    public DatabaseTestChange(String testClassName, String testMethodName,
+                              Changes changes, ReportData before, ReportData after, boolean testSuccess) {
         this.testClassName = testClassName;
         this.testMethodName = testMethodName;
         this.changes = changes;

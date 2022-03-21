@@ -2,7 +2,7 @@ package dev.yila.dormamu;
 
 import dev.yila.dormamu.report.ReportData;
 import dev.yila.dormamu.report.ReportDataProvider;
-import dev.yila.dormamu.test.ValidationChange;
+import dev.yila.dormamu.test.DatabaseTestChange;
 import dev.yila.dormamu.test.ValidationChangesStore;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -38,7 +38,7 @@ public class Db implements ChangesCalculator {
     }
 
     private void addChangeToStore(Changes changes, ReportData before, ReportData after) {
-        validationChangesStore.putChange(new ValidationChange(
+        validationChangesStore.putChange(new DatabaseTestChange(
                 null, null, changes, before, after, false));
     }
 

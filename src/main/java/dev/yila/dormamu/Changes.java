@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -65,18 +66,23 @@ public class Changes {
         return !somethingNotValidate;
     }
 
+    public Stream<ValidatedChange> validatedChanges() {
+        return changes.stream()
+                .map(change -> new ValidatedChange(change, validatedChanges.contains(change)));
+    }
+
     public String getResultAsString() {
         String allChanges = "\r\n";
         if (changes.size() > 0) {
             allChanges += "-- " + (allValidated() ? " (SUCCESS)" : " (FAIL)") + "... validated (v) or not validated(x)\r\n";
-            for (Change change : changes) {
-                if (validatedChanges.contains(change)) {
-                    allChanges += "✅ " + change.toString() + "\r\n";
+            allChanges += validatedChanges().map(validatedChange -> {
+                if (validatedChange.isValidated()) {
+                    return "✅ " + validatedChange.getChange().toString();
                 } else {
-                    allChanges += "❌ " + change.toString() + "\r\n";
+                    return "❌ " + validatedChange.getChange().toString();
                 }
-            }
-            allChanges += "-- End changes" + "\r\n";
+            }).collect(Collectors.joining("\r\n"));
+            allChanges += "\r\n" + "-- End changes" + "\r\n";
         }
         return allChanges;
     }
